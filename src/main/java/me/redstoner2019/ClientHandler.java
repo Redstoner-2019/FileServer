@@ -27,7 +27,7 @@ public class ClientHandler {
                         if(packet.has("header")) {
                             switch (packet.getString("header")) {
                                 case "upload" -> {
-                                    filename = UUID.randomUUID().toString() + "_" + packet.getString("filename");
+                                    filename = UUID.randomUUID().toString();
                                     FileServer.addFile(filename,packet.getString("filename"));
                                     JSONObject data = new JSONObject();
                                     data.put("filename",filename);
@@ -50,6 +50,17 @@ public class ClientHandler {
                                     }
                                     fos.flush();
                                     fos.close();
+                                }
+                                case "download" -> {
+                                    String uuid = packet.getString("uuid");
+                                    FileInputStream fis = new FileInputStream("files/"+uuid);
+
+                                    byte[] data = fis.readAllBytes();
+
+                                    System.out.println("Writing " + data.length + " bytes");
+
+                                    out.write(data);
+                                    fis.close();
                                 }
                                 default -> {
                                     System.err.println("Not implemented.");
