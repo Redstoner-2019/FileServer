@@ -22,6 +22,7 @@ public class FileServer {
         while (serverSocket.isBound()){
             try {
                 Socket socket = serverSocket.accept();
+                System.out.println("Client connected");
                 ClientHandler clientHandler = new ClientHandler(socket);
             } catch (IOException e) {
                 System.err.println("Connection failed");

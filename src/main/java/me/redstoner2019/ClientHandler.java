@@ -53,6 +53,15 @@ public class ClientHandler {
                                 }
                                 case "download" -> {
                                     String uuid = packet.getString("uuid");
+                                    if(new File("files/"+uuid).exists()){
+                                        JSONObject result = new JSONObject();
+                                        result.put("result",true);
+                                        out.writeObject(result.toString());
+                                    } else {
+                                        JSONObject result = new JSONObject();
+                                        result.put("result",false);
+                                        out.writeObject(result.toString());
+                                    }
                                     FileInputStream fis = new FileInputStream("files/"+uuid);
 
                                     byte[] data = fis.readAllBytes();
