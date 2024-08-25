@@ -69,6 +69,8 @@ public class ClientHandler {
                                     System.out.println("Writing " + data.length + " bytes");
 
                                     out.write(data);
+                                    out.flush();
+                                    out.close();
                                     fis.close();
                                 }
                                 default -> {
