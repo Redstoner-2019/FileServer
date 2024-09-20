@@ -14,7 +14,7 @@ public class FileServer {
     public static void main(String[] args) {
         try {
             serverSocket = new ServerSocket(20);
-            WebFileServer server = new WebFileServer(1234);
+            WebFileServer server = new WebFileServer(8011);
             server.start();
         } catch (IOException e) {
             System.err.println("Could not start Server on port: 20");

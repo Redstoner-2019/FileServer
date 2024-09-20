@@ -15,58 +15,48 @@
 <p id="status">Waiting for file...</p>
 
 <script>
-    // Create WebSocket connection
-    const ws = new WebSocket('ws://localhost:1234');
-
-    // Elements for user feedback
     const fileInput = document.querySelector('#fileInput');
     const statusText = document.querySelector('#status');
 
-    // Handle WebSocket open event
-    ws.onopen = function() {
-        statusText.textContent = 'WebSocket connection established. You can now upload a file.';
-        console.log('WebSocket connected');
-    };
+    const fileServerSocket = new WebSocket('ws://localhost:8011');
 
-    // Handle file selection
-    fileInput.addEventListener('change', (event) => {
-        const file = event.target.files[0];
-
+    function uploadFile(file){
         if (file) {
             const reader = new FileReader();
-
-            // When file is read, send it as an ArrayBuffer over WebSocket
             reader.onload = function(event) {
                 const arrayBuffer = event.target.result;
                 let upload = {
                     "filename" : file.name,
                     "size" : arrayBuffer.byteLength
                 };
-                ws.send(JSON.stringify(upload));  // Send file bytes over WebSocket
-                ws.send(arrayBuffer);
-                statusText.textContent = 'File uploaded successfully!';
-                console.log('File sent');
+                fileServerSocket.send(JSON.stringify(upload));
+                fileServerSocket.send(arrayBuffer);
             };
 
-            // Read the file as ArrayBuffer
             reader.readAsArrayBuffer(file);
-            statusText.textContent = 'Uploading file...';
         }
+    }
+
+    fileInput.addEventListener('change', (event) => {
+        const file = event.target.files[0];
+        uploadFile(file);
     });
 
-    // Handle WebSocket message (optional for server responses)
-    ws.onmessage = function(event) {
+    fileServerSocket.onopen = function() {
+        statusText.textContent = 'WebSocket connection established. You can now upload a file.';
+        console.log('WebSocket connected');
+    };
+
+    fileServerSocket.onmessage = function(event) {
         console.log('Message from server:', event.data);
     };
 
-    // Handle WebSocket error
-    ws.onerror = function(error) {
+    fileServerSocket.onerror = function(error) {
         statusText.textContent = 'WebSocket error occurred.';
         console.error('WebSocket Error:', error);
     };
 
-    // Handle WebSocket close event
-    ws.onclose = function() {
+    fileServerSocket.onclose = function() {
         statusText.textContent = 'WebSocket connection closed.';
         console.log('WebSocket closed');
     };

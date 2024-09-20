@@ -10,6 +10,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
+import java.util.HashMap;
 import java.util.UUID;
 
 public class WebFileServer extends WebSocketServer {
@@ -17,8 +18,8 @@ public class WebFileServer extends WebSocketServer {
         super(new InetSocketAddress(port));
     }
 
-    public boolean recievingFile = false;
-    public String filename = "";
+    private HashMap<String, Boolean> recievingFiles = new HashMap<>();
+    private HashMap<String, String> filenames = new HashMap<>();
 
     @Override
     public void onOpen(WebSocket conn, ClientHandshake handshake) {
@@ -37,23 +38,22 @@ public class WebFileServer extends WebSocketServer {
 
     @Override
     public void onMessage(WebSocket webSocket, String s) {
-        System.out.println(s);
-        if(!recievingFile){
+        if(!recievingFiles.getOrDefault(webSocket.getRemoteSocketAddress().toString(),false)){
             JSONObject data = new JSONObject(s);
-            filename = data.getString("filename");
-            recievingFile = true;
+            filenames.put(webSocket.getRemoteSocketAddress().toString(),data.getString("filename"));
+            recievingFiles.put(webSocket.getRemoteSocketAddress().toString(),true);
         }
     }
 
     @Override
     public void onMessage(WebSocket webSocket, ByteBuffer s) {
-        if(recievingFile){
+        if(recievingFiles.getOrDefault(webSocket.getRemoteSocketAddress().toString(),false)){
             try {
                 String uuid = UUID.randomUUID().toString();
                 FileOutputStream fos = new FileOutputStream("files/"+uuid);
                 fos.write(s.array());
                 fos.close();
-                FileServer.addFile(uuid, filename);
+                FileServer.addFile(uuid, filenames.get(webSocket.getRemoteSocketAddress().toString()));
 
                 JSONObject data = new JSONObject();
                 data.put("uuid",uuid);
@@ -70,6 +70,6 @@ public class WebFileServer extends WebSocketServer {
 
     @Override
     public void onStart() {
-
+        System.out.println("FileServer started");
     }
 }
